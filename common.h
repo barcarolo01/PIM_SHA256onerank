@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MESSAGE_SIZE 256*1024 //(1 << 20)	//(1<<22)  = 4194304 bytes = 4 MByte
+#define MESSAGE_SIZE 128*1024 //(1 << 20)	//(1<<22)  = 4194304 bytes = 4 MByte
 
 
 #define DPU_BUFFER_SIZE BUFFER_SIZE/NRDPU

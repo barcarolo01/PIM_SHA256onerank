@@ -48,7 +48,7 @@ int main()
 	DPU_ASSERT(dpu_alloc(NRDPU, NULL, &set));	//Allocating DPUs
 	printf("--Allocated %d DPUs\n",NRDPU);
 	printf("--Using %d tasklets\n",NR_TASKLETS);
-	printf("Number of messages: %d\t MESSAGE_SIZE: %d kb\n",NUM_MSG,MESSAGE_SIZE/1024);
+	printf("Number of messages: %d\t MESSAGE_SIZE: %d kb\t TOTAL DATA SIZE = %d Mb\n",NUM_MSG,MESSAGE_SIZE/1024,(NUM_MSG*MESSAGE_SIZE)/(1024*1024));
         DPU_ASSERT(dpu_load(set, DPU_EXE, NULL));	//Loading DPU program
 
 	double initTime= my_clock();	//START Measuring performance

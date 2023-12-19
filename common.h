@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MESSAGE_SIZE 128*1024 //(1 << 20)	//(1<<22)  = 4194304 bytes = 4 MByte
+#define MESSAGE_SIZE 32*1024 //(1 << 20)	//(1<<22)  = 4194304 bytes = 4 MByte
 
 
 #define DPU_BUFFER_SIZE BUFFER_SIZE/NRDPU
@@ -29,6 +29,14 @@
 #define SIG1(x) (ROTRIGHT(x,17) ^ ROTRIGHT(x,19) ^ ((x) >> 10))
 
 
+void readFile(unsigned char* msg, int index)
+{
+	char filename[50];
+	for(int i=0;i<MESSAGE_SIZE-9;++i)
+	{
+		msg[i] = 'A' + ((index+i)%26);
+	}
+}
 
 static inline uint32_t rotr(uint32_t x, int n){
     return (x >> n) | (x << (32 - n));

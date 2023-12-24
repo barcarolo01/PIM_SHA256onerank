@@ -34,7 +34,7 @@ void readFile(unsigned char* msg, int index)
 	char filename[50];
 	for(int i=0;i<MESSAGE_SIZE-9;++i)
 	{
-		msg[i] = 'A' + ((index+i)%26);
+		msg[i] = 'A' + ((index)%26);
 	}
 }
 

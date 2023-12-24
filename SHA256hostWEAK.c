@@ -12,11 +12,9 @@
 #endif
 
 
-#define NUM_MSG 1024
-
 #define NUM NRDPU*NR_TASKLETS
-char msg[MESSAGE_SIZE*24];
-char digests[16*NRDPU*NR_TASKLETS];
+char* msg;
+uint32_t digests[NRDPU*NR_TASKLETS*8];
 
 
 static inline double my_clock(void) {
@@ -27,22 +25,25 @@ static inline double my_clock(void) {
 
 int main()
 {
+
+	msg = malloc(32*16*NRDPU*MESSAGE_SIZE);
 	double FileTimeDPU=0,CPUtoDPU=0,DPUtime=0,DPUtoCPU=0;
 	int d=0;
 	int processedFileDPU=0;
 	int processedFileHost=0;
 	struct dpu_set_t set, dpu;
-	double tmpTimer[5];
+	double tmpTimer[5],initTime,endTime;
 	uint32_t each_dpu,nr_instructions,transferTime,numberOfTransfer,clockPerSec,SHAtimeDPU;
-	uint32_t digests_DPU[8*NUM_MSG*NRDPU*16];
-	uint32_t digests_HOST[8*NUM_MSG*NRDPU*16];
+	uint32_t* digests_DPU = malloc(8*16*NRDPU*16);
+	uint32_t* digests_HOST = malloc(8*16*NRDPU*16);
 	DPU_ASSERT(dpu_alloc(NRDPU, NULL, &set));	//Allocating DPUs
 	printf("--Allocated %d DPUs\n",NRDPU);
 	printf("--Using %d tasklets\n",NR_TASKLETS);
-	printf("Number of messages: %d\t MESSAGE_SIZE: %d kb\t TOTAL DATA SIZE = %d Mb\n",NUM_MSG,MESSAGE_SIZE/1024,(NUM_MSG*MESSAGE_SIZE)/(1024*1024));
-    DPU_ASSERT(dpu_load(set, DPU_EXE, NULL));	//Loading DPU program
+//	printf("Number of messages: %d\t MESSAGE_SIZE: %d kb\t TOTAL DATA SIZE = %d Mb\n",NUM_MSG,MESSAGE_SIZE/1024,(NUM_MSG*MESSAGE_SIZE)/(1024*1024));
+	DPU_ASSERT(dpu_load(set, DPU_EXE, NULL));	//Loading DPU program
 
-	double initTime= my_clock();	//START Measuring performance
+
+	initTime= my_clock();	//START Measuring performance
 	DPU_FOREACH(set,dpu,each_dpu)
 	{
 		tmpTimer[0] = my_clock();
@@ -69,7 +70,7 @@ int main()
 		DPU_ASSERT(dpu_copy_from(dpu,"hash_digests",0,digests_DPU+8*NR_TASKLETS*each_dpu,8*NR_TASKLETS*sizeof(uint32_t)));	
 		DPUtime += my_clock() - tmpTimer[4];
 	}
-	double endTime = my_clock();
+	endTime = my_clock();
 
 
 	DPU_FOREACH(set,dpu,each_dpu)
@@ -105,17 +106,13 @@ int main()
 	
 	
 	DPU_ASSERT(dpu_free(set));
-	printf("HOST: %d DPU: %d\n\n",processedFileHost,processedFileDPU);
+	printf("HOST: %d DPU: %d\t Each DPU hashed %d kB\n\n",processedFileHost,processedFileDPU,(processedFileDPU*MESSAGE_SIZE)/(1024*NRDPU));
 	
 	printf("-CPU-DPU transfer time: %.1f ms.\n", 1000*(CPUtoDPU));
 	printf("-DPU kernel time: %.1f ms.\n", 1000*(DPUtime));
-/*		printf("\t-Number of MRAM-WRAM transfer: %d\n",numberOfTransfer);
-		printf("\t-One MRAM-WRAM transfer time:%.1f ms\t Estimated total=%.1f ms\n",1000.0*transferTime/clockPerSec,(1000.0*transferTime/clockPerSec)*numberOfTransfer);
-		printf("\t-One SHA256 cache hashing time:%.1f ms\t Estimated total=%.1f ms\n",1000.0*SHAtimeDPU/clockPerSec,(1000.0*SHAtimeDPU/clockPerSec)*numberOfTransfer);*/
 	printf("-DPU-CPU kernel time: %.1f ms.\n", 1000*(DPUtoCPU));
 	printf("--Total host elapsed time: %.1f ms.\n", 1000*(endTime-initTime));
 	printf("--Hashing time on HOST CPU: %.1f ms.\n", 1000*(tmpTimer[4]-tmpTimer[3]));
-
 	printf("-------------------------------------------------\n");
     return 0;
 }

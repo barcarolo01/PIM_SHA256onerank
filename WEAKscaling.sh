@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
-nrdpus=2
+nrdpus=1
 while [ $nrdpus -le 64 ]
 do
 dpu-upmem-dpurte-clang -DNR_TASKLETS=16 -DNRDPU=$nrdpus  -DSTACK_SIZE_DEFAULT=2048 -O3 SHA256DPU.c -o SHA256DPU
